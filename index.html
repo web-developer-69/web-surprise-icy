@@ -14,20 +14,41 @@
     <p>This page is for educational testing purposes only. By visiting, you consent to your IP being logged.</p>
     <p id="ipDisplay">Fetching your IP...</p>
     <button onclick="window.location.href='https://www.google.com'">Return to Google</button>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js"></script>
     <script>
-        // Fetch the visitor's IP using a free API
+        // Replace this firebaseConfig object with your actual config from Firebase Console
+        const firebaseConfig = {
+            apiKey: "your-api-key",
+            authDomain: "your-auth-domain",
+            projectId: "your-project-id",
+            storageBucket: "your-storage-bucket",
+            messagingSenderId: "your-sender-id",
+            appId: "your-app-id"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // Fetch the visitor's IP and log it to Firestore
         fetch('https://api.ipify.org?format=json')
             .then(response => response.json())
             .then(data => {
                 const ip = data.ip;
                 const currentTime = new Date().toISOString();
                 document.getElementById('ipDisplay').textContent = `Your IP: ${ip} (Logged at ${currentTime})`;
-                // Log the IP and timestamp to localStorage (client-side, for demo purposes)
-                const logEntry = `IP: ${ip} - Time: ${currentTime}\n`;
-                let logs = localStorage.getItem('ipLogs') || '';
-                logs += logEntry;
-                localStorage.setItem('ipLogs', logs);
-                console.log('Logged:', logEntry); // For debugging
+
+                // Log to Firestore
+                db.collection("ipLogs").add({
+                    ip: ip,
+                    timestamp: currentTime
+                }).then(() => {
+                    console.log("IP logged successfully");
+                }).catch(error => {
+                    console.error("Error logging IP:", error);
+                });
             })
             .catch(error => {
                 console.error('Error fetching IP:', error);
@@ -36,4 +57,3 @@
     </script>
 </body>
 </html>
- “
